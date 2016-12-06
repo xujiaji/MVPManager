@@ -1,6 +1,8 @@
 package io.xujiaji.plugin.dialog;
 
 import com.intellij.openapi.ui.Messages;
+import io.xujiaji.plugin.EditorListener;
+import io.xujiaji.plugin.model.EditEntity;
 import org.apache.http.util.TextUtils;
 
 import javax.swing.*;
@@ -25,9 +27,15 @@ public class EditorMVPDialog extends JDialog {
     private JButton btnDelModel;
     private JTable tablePresenter;
     private JTable tableModel;
+    private JTextField textField1;
     private JButton[] btnAddArr = new JButton[3];
     private JButton[] btnDelArr = new JButton[3];
     private JTable[] tableArr = new JTable[3];
+    private EditorListener listener;
+
+    public void setEditorListener(EditorListener listener) {
+        this.listener = listener;
+    }
 
     public EditorMVPDialog() {
         setContentPane(contentPane);
@@ -114,23 +122,39 @@ public class EditorMVPDialog extends JDialog {
     }
 
     private void onOK() {
-        ArrayList<String> list = new ArrayList<>();
-        for (int i = 0; i < tableView.getModel().getRowCount(); i++) {
-            TableModel model = tableView.getModel();
-            String returnStr = (String) model.getValueAt(i, 0);
-            String methodStr = (String) model.getValueAt(i, 1);
-
-            if (TextUtils.isEmpty(returnStr) || TextUtils.isEmpty(methodStr)) {
+        if (listener != null) {
+            ArrayList<String> viewData = getData(tableView);
+            ArrayList<String> presenterData = getData(tablePresenter);
+            ArrayList<String> modelData = getData(tableModel);
+            if (viewData == null || presenterData == null || modelData == null) {
                 Messages.showMessageDialog("Incomplete information, please check", "Information", Messages.getInformationIcon());
                 return;
             }
-            list.add(returnStr + " " + methodStr + ";");
-        }
-        for (String s : list) {
-            System.out.println(s);
+            listener.editOver(new EditEntity(viewData, presenterData, modelData));
         }
         dispose();
     }
+
+    /**
+     * Get data in JTable
+     * @param jTable
+     * @return
+     */
+    private ArrayList<String> getData(JTable jTable) {
+        ArrayList<String> list = new ArrayList<>();
+        for (int i = 0; i < jTable.getModel().getRowCount(); i++) {
+            TableModel model = jTable.getModel();
+            String returnStr = (String) model.getValueAt(i, 0);
+            String methodStr = (String) model.getValueAt(i, 1);
+            if (TextUtils.isEmpty(returnStr) || TextUtils.isEmpty(methodStr)) {
+                return null;
+            }
+            list.add(returnStr + " " + methodStr + ";");
+        }
+
+        return list;
+    }
+
 
     private void onCancel() {
         // add your code here if necessary
