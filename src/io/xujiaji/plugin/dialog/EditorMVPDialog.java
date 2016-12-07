@@ -146,10 +146,12 @@ public class EditorMVPDialog extends JDialog {
             TableModel model = jTable.getModel();
             String returnStr = (String) model.getValueAt(i, 0);
             String methodStr = (String) model.getValueAt(i, 1);
+            returnStr = returnStr.trim();
+            methodStr = methodStr.trim();
             if (TextUtils.isEmpty(returnStr) || TextUtils.isEmpty(methodStr)) {
                 return null;
             }
-            list.add(returnStr + " " + methodStr + ";");
+            list.add(returnStr + "##" + methodStr);
         }
 
         return list;

@@ -26,7 +26,7 @@ public class MVPCreatorAction extends AnAction {
                 print(editEntity.getPresenter());
                 print(editEntity.getModel());
                 try {
-                    ClassCreateHelper.create(e, editEntity);
+                    ClassCreator.create(e, editEntity);
                 } catch (FileNotFoundException | UnsupportedEncodingException e1) {
                     e1.printStackTrace();
                 }
