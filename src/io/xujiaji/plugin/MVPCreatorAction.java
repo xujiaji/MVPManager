@@ -2,6 +2,7 @@ package io.xujiaji.plugin;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.ui.Messages;
 import io.xujiaji.plugin.dialog.EditorMVPDialog;
 import io.xujiaji.plugin.model.EditEntity;
 
@@ -25,11 +26,16 @@ public class MVPCreatorAction extends AnAction {
                 print(editEntity.getView());
                 print(editEntity.getPresenter());
                 print(editEntity.getModel());
+                if (ClassCreator.isFileExists(e, editEntity.getContractName())) {
+                    Messages.showMessageDialog("Please enter again contract name,\n " + editEntity.getContractName() + " already exist.", "Information", Messages.getInformationIcon());
+                    return;
+                }
                 try {
                     ClassCreator.create(e, editEntity);
                 } catch (FileNotFoundException | UnsupportedEncodingException e1) {
                     e1.printStackTrace();
                 }
+                mEditorMVPDialog.dispose();
             }
         });
         mEditorMVPDialog.pack();

@@ -27,7 +27,10 @@ public class EditorMVPDialog extends JDialog {
     private JButton btnDelModel;
     private JTable tablePresenter;
     private JTable tableModel;
-    private JTextField textField1;
+    private JTextField viewParent;
+    private JTextField contractName;
+    private JTextField presenterParent;
+    private JTextField modelParent;
     private JButton[] btnAddArr = new JButton[3];
     private JButton[] btnDelArr = new JButton[3];
     private JTable[] tableArr = new JTable[3];
@@ -57,6 +60,9 @@ public class EditorMVPDialog extends JDialog {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
+        viewParent.setText("XContract.View");
+        presenterParent.setText("XContract.Presenter");
+        modelParent.setText("XContract.Model");
         fillArr();
         addListener();
     }
@@ -130,9 +136,20 @@ public class EditorMVPDialog extends JDialog {
                 Messages.showMessageDialog("Incomplete information, please check", "Information", Messages.getInformationIcon());
                 return;
             }
-            listener.editOver(new EditEntity(viewData, presenterData, modelData));
+
+            String name = contractName.getText();
+            if (name == null || name.equals("")) {
+                Messages.showMessageDialog("Please input contract name!", "Information", Messages.getInformationIcon());
+                return;
+            }
+
+            EditEntity ee = new EditEntity(viewData, presenterData, modelData);
+            ee.setContractName(name.trim());
+            ee.setViewParent(viewParent.getText().trim());
+            ee.setPresenterParent(presenterParent.getText().trim());
+            ee.setModelParent(modelParent.getText().trim());
+            listener.editOver(ee);
         }
-        dispose();
     }
 
     /**
