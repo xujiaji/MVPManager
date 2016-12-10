@@ -26,14 +26,14 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
-    <internalFileTemplate name="Contract"/>
+    <!--<internalFileTemplate name="Contract"/>-->
   </extensions>
 
   <actions>
     <!-- Add your actions here -->
     <action id="MVPCreator.MVPCreatorAction" class="io.xujiaji.plugin.MVPCreatorAction" text="MVPCreator"
             description="Create MVP class">
-      <add-to-group group-id="NewGroup" anchor="last"/>
+      <add-to-group group-id="NewGroup" anchor="first"/>
     </action>
   </actions>
 

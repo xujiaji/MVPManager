@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.file.PsiDirectoryFactory;
@@ -15,6 +16,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by jiana on 05/12/16.
@@ -57,9 +61,9 @@ public class ClassCreator {
         PsiClass presenterInterface = factory.createInterface("Presenter");
         PsiClass modelInterface = factory.createInterface("Model");
 
-        importContractClass(project, factory, searchScope, classContract, editEntity.getViewParent());
-        importContractClass(project, factory, searchScope, classContract, editEntity.getPresenterParent());
-        importContractClass(project, factory, searchScope, classContract, editEntity.getPresenterParent());
+        importContractClass(project, classContract, editEntity.getViewParent());
+        importContractClass(project, classContract, editEntity.getPresenterParent());
+        importContractClass(project, classContract, editEntity.getPresenterParent());
 
 
         //add parent interface class
@@ -68,9 +72,9 @@ public class ClassCreator {
         extendsClass(factory, searchScope, modelInterface, editEntity.getModelParent());
 
         //add method to view,presenter,model interface
-        addMethodToClass(factory, viewInterface, editEntity.getView(), false);
-        addMethodToClass(factory, presenterInterface, editEntity.getPresenter(), false);
-        addMethodToClass(factory, modelInterface, editEntity.getModel(), false);
+        addMethodToClass(project, viewInterface, editEntity.getView(), false);
+        addMethodToClass(project, presenterInterface, editEntity.getPresenter(), false);
+        addMethodToClass(project, modelInterface, editEntity.getModel(), false);
 
         //add view,presenter,model Interface to Contract
         classContract.add(viewInterface);
@@ -84,27 +88,19 @@ public class ClassCreator {
         impInterface(factory, searchScope, classPresenter, editEntity.getContractName() + "Contract.Presenter");
         impInterface(factory, searchScope, classModel, editEntity.getContractName() + "Contract.Model");
 
-        addMethodToClass(factory, classPresenter, editEntity.getPresenter(), true);
-        addMethodToClass(factory, classModel, editEntity.getModel(), true);
+        addMethodToClass(project, classPresenter, editEntity.getPresenter(), true);
+        addMethodToClass(project, classModel, editEntity.getModel(), true);
 
+        openFiles(project, classContract, classPresenter, classModel);
     }
 
 
-    private static void importContractClass(Project project, PsiElementFactory factory, GlobalSearchScope searchScope,PsiClass classContract, String viewParent) {
+    private static void importContractClass(Project project, PsiClass classContract, String viewParent) {
         String[] strings = viewParent.split("\\.");
         if (strings.length < 1) {
             return;
         }
-        PsiClass[] psiClasses = PsiShortNamesCache.getInstance(project).getClassesByName(strings[0], searchScope);
-        PsiImportStatement importStatement = factory.createImportStatement(psiClasses[0]);
-        PsiJavaFile psiJavaFile = ((PsiJavaFile) classContract.getContainingFile());
-        PsiImportList psiImportList = psiJavaFile.getImportList();
-        for (PsiImportStatement pis : psiImportList.getImportStatements()) {
-            if (pis.getText().equals(importStatement.getText())) {
-                return;
-            }
-        }
-        psiImportList.add(importStatement);
+        searchAndImportClass(strings[0], classContract, project);
     }
 
     private static PsiClass createClass(PsiDirectory moduleDir, String packageName, String name) {
@@ -125,11 +121,11 @@ public class ClassCreator {
 
     /**
      * add method to Class
-     * @param factory
+     *
      * @param psiClass
-
      */
-    private static void addMethodToClass(PsiElementFactory factory, PsiClass psiClass, java.util.List<String> methods, boolean over) {
+    private static void addMethodToClass(Project project, PsiClass psiClass, java.util.List<String> methods, boolean over) {
+        PsiElementFactory factory = JavaPsiFacade.getInstance(project).getElementFactory();
         for (String method : methods) {
             String[] strings = method.split("##");
             PsiMethod psiMethod = null;
@@ -140,6 +136,29 @@ public class ClassCreator {
                 psiMethod = factory.createMethodFromText(strings[0] + " " + strings[1] + ";", psiClass);
             }
             psiClass.add(psiMethod);
+
+            //Example: List<String>
+            if (strings[0].matches(".+<.+>")) {
+                //List<String>  >>>   List
+                Pattern pattern = Pattern.compile("(?<=^)[a-zA-Z1-9_$]+(?=<.+>)");
+                Matcher matcher = pattern.matcher(strings[0]);
+                if (matcher.find()) {
+                    searchAndImportClass(matcher.group(), psiClass, project);
+                }
+                //List<String>   >>>   String
+                Pattern p = Pattern.compile("(?<=<).+(?=>)");
+                Matcher m = p.matcher(strings[0]);
+                if (m.find()) {
+                    String s = m.group();
+                    //Not match example : List<List<String>> 、 List<? extend Pet>
+                    if (s.matches("^[a-zA-Z1-9_$]+$")) {
+                        searchAndImportClass(s, psiClass, project);
+                    }
+                }
+
+            } else {
+                searchAndImportClass(strings[0], psiClass, project);
+            }
         }
     }
 
@@ -152,6 +171,7 @@ public class ClassCreator {
 
     /**
      * implements interface
+     *
      * @param factory
      * @param searchScope
      * @param psiClass
@@ -164,6 +184,7 @@ public class ClassCreator {
 
     /**
      * extends class
+     *
      * @param factory
      * @param searchScope
      * @param psiClass
@@ -176,4 +197,82 @@ public class ClassCreator {
         PsiJavaCodeReferenceElement pjcre = factory.createFQClassNameReferenceElement(className, searchScope);
         psiClass.getExtendsList().add(pjcre);
     }
+
+    /**
+     * search and import class
+     *
+     * @param name
+     * @param resClass
+     * @param project
+     */
+    private static void searchAndImportClass(String name, PsiClass resClass, Project project) {
+        if ("".equals(name) || "void".equals(name)) return;
+        PsiClass importClass = searchClassByName(name, project);
+        if (importClass == null) return;
+        PsiJavaFile psiJavaFile = ((PsiJavaFile) importClass.getContainingFile());
+        String packageName = psiJavaFile.getPackageName();
+        if (packageName.contains("java.lang")) return;
+        importClass(importClass, resClass, project);
+    }
+
+    /**
+     * search class by class name.
+     *
+     * @param name
+     * @param project
+     * @return
+     */
+    private static PsiClass searchClassByName(String name, Project project) {
+        GlobalSearchScope searchScope = GlobalSearchScope.allScope(project);
+        PsiClass[] psiClasses = PsiShortNamesCache.getInstance(project).getClassesByName(name, searchScope);
+        if (psiClasses.length == 1) {
+            return psiClasses[0];
+        }
+        if (psiClasses.length > 1) {
+            for (PsiClass pc :
+                    psiClasses) {
+                PsiJavaFile psiJavaFile = (PsiJavaFile) pc.getContainingFile();
+                String packageName = psiJavaFile.getPackageName();
+                if (List.class.getPackage().getName().equals(packageName)) {
+                    return pc;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * import class
+     *
+     * @param importClass
+     * @param resClass
+     * @param project
+     */
+    private static void importClass(PsiClass importClass, PsiClass resClass, Project project) {
+        if (importClass == null || resClass == null) return;
+        PsiElementFactory factory = JavaPsiFacade.getInstance(project).getElementFactory();
+        PsiImportStatement importStatement = factory.createImportStatement(importClass);
+        PsiJavaFile psiJavaFile = ((PsiJavaFile) resClass.getContainingFile());
+        PsiImportList psiImportList = psiJavaFile.getImportList();
+        if (psiImportList == null) return;
+        for (PsiImportStatement pis : psiImportList.getImportStatements()) {
+            if (pis.getText().equals(importStatement.getText())) {
+                return;
+            }
+        }
+        psiImportList.add(importStatement);
+    }
+
+    /**
+     * open mvp's java file.
+     * @param project
+     */
+    private static void openFiles(Project project, PsiClass ... psiClasses) {
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        for (PsiClass psiClass :
+                psiClasses) {
+            fileEditorManager.openFile(psiClass.getContainingFile().getVirtualFile(), true, true);
+        }
+    }
+
 }
