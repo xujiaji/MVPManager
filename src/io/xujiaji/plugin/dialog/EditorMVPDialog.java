@@ -1,8 +1,9 @@
 package io.xujiaji.plugin.dialog;
 
 import com.intellij.openapi.ui.Messages;
-import io.xujiaji.plugin.EditorListener;
+import io.xujiaji.plugin.listener.EditorListener;
 import io.xujiaji.plugin.model.EditEntity;
+import io.xujiaji.plugin.model.InitEntity;
 import org.apache.http.util.TextUtils;
 
 import javax.swing.*;
@@ -31,22 +32,46 @@ public class EditorMVPDialog extends JDialog {
     private JTextField contractName;
     private JTextField presenterParent;
     private JTextField modelParent;
+    private JComboBox viewPackageName;
+    private JTextField viewImpName;
     private JButton[] btnAddArr = new JButton[3];
     private JButton[] btnDelArr = new JButton[3];
     private JTable[] tableArr = new JTable[3];
     private EditorListener listener;
+    private InitEntity initEntity;
 
     public void setEditorListener(EditorListener listener) {
         this.listener = listener;
     }
 
-    public EditorMVPDialog() {
+    public EditorMVPDialog(InitEntity initEntity) {
+        this.initEntity = initEntity;
         setContentPane(contentPane);
         setModal(true);
-        getRootPane().setDefaultButton(buttonOK);
 
+        getRootPane().setDefaultButton(buttonOK);
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+
+        viewParent.setText("XContract.View");
+        presenterParent.setText("XContract.Presenter");
+        modelParent.setText("XContract.Model");
+        fillArr();
+        initView();
+        addListener();
+    }
+
+    private void initView() {
+        if (initEntity == null) return;
+        String[] datasPackage = new String[initEntity.getPsiDirectories().length];
+        for (int i = 0; i < datasPackage.length; i++) {
+            datasPackage[i] = initEntity.getPsiDirectories()[i].getName();
+        }
+        ComboBoxModel<String> comboBoxModel = new DefaultComboBoxModel<>(datasPackage);
+        viewPackageName.setModel(comboBoxModel);
+    }
+
+    private void addListener() {
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 onCancel();
@@ -60,14 +85,6 @@ public class EditorMVPDialog extends JDialog {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        viewParent.setText("XContract.View");
-        presenterParent.setText("XContract.Presenter");
-        modelParent.setText("XContract.Model");
-        fillArr();
-        addListener();
-    }
-
-    private void addListener() {
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onOK();
@@ -148,12 +165,27 @@ public class EditorMVPDialog extends JDialog {
             ee.setViewParent(viewParent.getText().trim());
             ee.setPresenterParent(presenterParent.getText().trim());
             ee.setModelParent(modelParent.getText().trim());
+            String packageName = (String) viewPackageName.getModel().getSelectedItem();
+            if (packageName != null && !packageName.equals("") && initEntity != null && initEntity.getPsiDirectories() != null) {
+                for (int i = 0; i < initEntity.getPsiDirectories().length; i++) {
+                    if (initEntity.getPsiDirectories()[i].getName().equals(packageName)) {
+                        ee.setViewDir(initEntity.getPsiDirectories()[i]);
+                        break;
+                    }
+                }
+            }
+            if ("".equals(viewImpName.getText().trim())) {
+                Messages.showMessageDialog("Please input implement view!", "Information", Messages.getInformationIcon());
+                return;
+            }
+            ee.setViewName(viewImpName.getText().trim());
             listener.editOver(ee);
         }
     }
 
     /**
      * Get data in JTable
+     *
      * @param jTable
      * @return
      */
@@ -181,16 +213,16 @@ public class EditorMVPDialog extends JDialog {
     }
 
     public static void main(String[] args) {
-        EditorMVPDialog dialog = new EditorMVPDialog();
+        EditorMVPDialog dialog = new EditorMVPDialog(null);
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);
     }
 
     private void createUIComponents() {
-        initJTable(tableView =  newTableInstance());
-        initJTable(tablePresenter =  newTableInstance());
-        initJTable(tableModel =  newTableInstance());
+        initJTable(tableView = newTableInstance());
+        initJTable(tablePresenter = newTableInstance());
+        initJTable(tableModel = newTableInstance());
     }
 
 
@@ -223,6 +255,7 @@ public class EditorMVPDialog extends JDialog {
 
     /**
      * create a JTable instance
+     *
      * @return
      */
     private JTable newTableInstance() {
@@ -238,6 +271,7 @@ public class EditorMVPDialog extends JDialog {
                 super.tableChanged(e);
                 repaint();
             }
+
             @Override
             public boolean isCellEditable(int row, int column) {
                 return true;

@@ -31,9 +31,13 @@
 
   <actions>
     <!-- Add your actions here -->
-    <action id="MVPCreator.MVPCreatorAction" class="io.xujiaji.plugin.MVPCreatorAction" text="MVPCreator"
+    <action id="MVPCreator.MVPCreateAction" class="io.xujiaji.plugin.action.MVPCreateAction" text="MVPCreator"
             description="Create MVP class">
       <add-to-group group-id="NewGroup" anchor="first"/>
+    </action>
+    <action id="MVPCreator.MVPChangeAction" class="io.xujiaji.plugin.action.MVPChangeAction" text="MVPChange"
+            description="Change mvp by it.">
+      <add-to-group group-id="GenerateGroup" anchor="first"/>
     </action>
   </actions>
 

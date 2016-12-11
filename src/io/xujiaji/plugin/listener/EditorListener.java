@@ -1,4 +1,4 @@
-package io.xujiaji.plugin;
+package io.xujiaji.plugin.listener;
 
 import io.xujiaji.plugin.model.EditEntity;
 

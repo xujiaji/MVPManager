@@ -1,5 +1,7 @@
 package io.xujiaji.plugin.model;
 
+import com.intellij.psi.PsiDirectory;
+
 import java.util.List;
 
 /**
@@ -13,6 +15,8 @@ public class EditEntity {
     private List<String> view;
     private List<String> presenter;
     private List<String> model;
+    private PsiDirectory viewDir;
+    private String viewName;
 
     public EditEntity(String contractName) {
         this.contractName = contractName;
@@ -22,6 +26,22 @@ public class EditEntity {
         this.view = view;
         this.presenter = presenter;
         this.model = model;
+    }
+
+    public String getViewName() {
+        return viewName;
+    }
+
+    public void setViewName(String viewName) {
+        this.viewName = viewName;
+    }
+
+    public PsiDirectory getViewDir() {
+        return viewDir;
+    }
+
+    public void setViewDir(PsiDirectory viewDir) {
+        this.viewDir = viewDir;
     }
 
     public String getContractName() {
