@@ -1,1 +1,5 @@
 # MVPManager
+
+
+# License
+[MIT](LICENSE)
