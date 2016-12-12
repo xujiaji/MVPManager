@@ -1,8 +1,10 @@
 # MVPManager
 
-<iframe width="1280" height="720" src="https://www.youtube.com/embed/epaMr8DK9QM" frameborder="0" allowfullscreen></iframe>
+### YouTube演示
+[![IMAGE_VIDEO](display/video_img.png)](https://www.youtube.com/watch?v=epaMr8DK9QM)
 
-[![IMAGE ALT TEXT HERE](https://i.ytimg.com/vi/epaMr8DK9QM/1.jpg?time=1481531413090)](https://www.youtube.com/watch?v=epaMr8DK9QM)
+### 优酷演示
+[![IMAGE_VIDEO](display/video_img.png)](http://v.youku.com/v_show/id_XMTg2MTIzMzQ0OA==.html)
 
 
 
