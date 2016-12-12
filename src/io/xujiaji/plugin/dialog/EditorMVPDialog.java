@@ -2,8 +2,12 @@ package io.xujiaji.plugin.dialog;
 
 import com.intellij.openapi.ui.Messages;
 import io.xujiaji.plugin.listener.EditorListener;
+import io.xujiaji.plugin.listener.IMDListener;
 import io.xujiaji.plugin.model.EditEntity;
 import io.xujiaji.plugin.model.InitEntity;
+import io.xujiaji.plugin.model.MethodEntity;
+import io.xujiaji.plugin.util.GenericHelper;
+import io.xujiaji.plugin.widget.InputMethodDialog;
 import org.apache.http.util.TextUtils;
 
 import javax.swing.*;
@@ -103,8 +107,12 @@ public class EditorMVPDialog extends JDialog {
             btn.addActionListener(new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    DefaultTableModel model = (DefaultTableModel) tableArr[finalI].getModel();
-                    model.addRow(new Object[]{"void", ""});
+                    InputMethodDialog.input(new IMDListener() {
+                        @Override
+                        public void complete(MethodEntity methodEntity) {
+                            GenericHelper.addAMethod((DefaultTableModel) tableArr[finalI].getModel(), methodEntity);
+                        }
+                    });
                 }
             });
         }
@@ -274,7 +282,7 @@ public class EditorMVPDialog extends JDialog {
 
             @Override
             public boolean isCellEditable(int row, int column) {
-                return true;
+                return false;
             }
         };
         return mJtable;

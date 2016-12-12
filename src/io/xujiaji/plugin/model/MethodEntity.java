@@ -13,6 +13,14 @@ public class MethodEntity {
         this.methodStr = methodStr;
     }
 
+    public void setReturnStr(String returnStr) {
+        this.returnStr = returnStr;
+    }
+
+    public void setMethodStr(String methodStr) {
+        this.methodStr = methodStr;
+    }
+
     public String getReturnStr() {
         return returnStr;
     }

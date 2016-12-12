@@ -62,12 +62,7 @@ public class ClassHelper {
         PsiClass classContract = createClass(moduleDir, PACKAGE_CONTRACT, editEntity.getContractName() + "Contract");
         PsiClass classPresenter = createClass(moduleDir, PACKAGE_PRESENTER, editEntity.getContractName() + "Presenter");
         PsiClass classModel = createClass(moduleDir, PACKAGE_MODEL, editEntity.getContractName() + "Model");
-        PsiClass classView;
-        if (editEntity.getViewDir() == null) {
-            classView = JavaDirectoryService.getInstance().createClass(moduleDir, editEntity.getViewName());
-        } else {
-            classView = JavaDirectoryService.getInstance().createClass(editEntity.getViewDir(), editEntity.getViewName());
-        }
+        PsiClass classView = createOrGetView(moduleDir, editEntity);
 
         //create view,presenter,model interface
         PsiClass viewInterface = factory.createInterface("View");
@@ -111,6 +106,31 @@ public class ClassHelper {
         openFiles(project, classContract, classPresenter, classModel, classView);
     }
 
+    private static PsiClass getView(PsiDirectory dir, EditEntity editEntity) {
+        for (PsiClass psiClass:
+             JavaDirectoryService.getInstance().getClasses(dir)) {
+            if (editEntity.getViewName().equals(psiClass.getName())) {
+                return psiClass;
+            }
+        }
+        return null;
+    }
+
+    private static PsiClass createOrGetView(PsiDirectory moduleDir, EditEntity editEntity) {
+        PsiClass classView = null;
+        if (editEntity.getViewDir() == null) {
+            classView = getView(moduleDir, editEntity);
+            if (classView != null) return classView;
+            classView = JavaDirectoryService.getInstance().createClass(moduleDir, editEntity.getViewName());
+        } else {
+            classView = getView(editEntity.getViewDir(), editEntity);
+            if (classView != null) return classView;
+            classView = JavaDirectoryService.getInstance().createClass(editEntity.getViewDir(), editEntity.getViewName());
+        }
+
+        return classView;
+    }
+
 
     private static void importContractClass(Project project, PsiClass classContract, String viewParent) {
         String[] strings = viewParent.split("\\.");
@@ -141,7 +161,7 @@ public class ClassHelper {
      *
      * @param psiClass
      */
-    private static void addMethodToClass(Project project, PsiClass psiClass, java.util.List<String> methods, boolean over) {
+    public static void addMethodToClass(Project project, PsiClass psiClass, java.util.List<String> methods, boolean over) {
         PsiElementFactory factory = JavaPsiFacade.getInstance(project).getElementFactory();
         for (String method : methods) {
             String[] strings = method.split("##");
@@ -155,7 +175,7 @@ public class ClassHelper {
             psiClass.add(psiMethod);
             importReturnAndPra(strings[0], psiClass, project);
             for (PsiParameter pp :
-                psiMethod.getParameterList().getParameters()) {
+                    psiMethod.getParameterList().getParameters()) {
                 importReturnAndPra(pp.getTypeElement().getType().getPresentableText(), psiClass, project);
 //                System.out.println(pp.getTypeElement().getType().getPresentableText());
             }
@@ -295,9 +315,10 @@ public class ClassHelper {
 
     /**
      * open mvp's java file.
+     *
      * @param project
      */
-    private static void openFiles(Project project, PsiClass ... psiClasses) {
+    private static void openFiles(Project project, PsiClass... psiClasses) {
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         for (PsiClass psiClass :
                 psiClasses) {
@@ -323,12 +344,12 @@ public class ClassHelper {
 
     /**
      * fill table
+     *
      * @param psiJavaFile
      * @return
      */
     public static Map<String, Object[][]> getMethod(PsiJavaFile psiJavaFile) {
         Map<String, Object[][]> map = new HashMap<>();
-
         PsiClass[] psiClass = psiJavaFile.getClasses();
         for (PsiClass pc :
                 psiClass) {

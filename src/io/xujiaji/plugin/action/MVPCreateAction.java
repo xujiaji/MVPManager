@@ -28,10 +28,6 @@ public class MVPCreateAction extends AnAction {
                     MsgUtil.showInfo("Please enter again contract name,\n " + editEntity.getContractName() + " already exist.");
                     return;
                 }
-                if (ClassHelper.isFileExists(e, editEntity.getViewName())) {
-                    MsgUtil.showInfo("Please enter again view implement class name,\n" + editEntity.getViewName() + " already exist.");
-                    return;
-                }
                 try {
                     ClassHelper.create(e, editEntity);
                 } catch (FileNotFoundException | UnsupportedEncodingException e1) {

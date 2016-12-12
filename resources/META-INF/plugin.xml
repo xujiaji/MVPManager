@@ -1,12 +1,17 @@
 <idea-plugin version="2">
-  <id>com.xujiaji.plugin.MVPCreator</id>
+  <id>com.xujiaji.plugin.MVPManager</id>
   <name>MVPCreator</name>
   <version>1.0</version>
   <vendor email="jiajixu@qq.com" url="https://github.com/xujiaji">No Company</vendor>
 
   <description><![CDATA[
-      Enter short description for your plugin here.<br>
-      <em>most HTML tags may be used</em>
+      通过MVPManager可以快速的管理MVP框架<br />
+      正向生成MVP所需的代码和自动创建实现类，并实现方法。<br />
+      逆向MVP代码增添或删除方法，而不需手动在接口和实现类中进行两次操作。<br />
+      <hr />
+      Through the MVPManager can quickly manage the MVP framework <br />
+      Generate the code required for MVP and automatically create the implementation class, and implement methods. <br />
+      Reverse MVP code to add or remove methods, without having to manually in the interface and the implementation class in two operations. <br />
     ]]></description>
 
   <change-notes><![CDATA[
@@ -31,11 +36,11 @@
 
   <actions>
     <!-- Add your actions here -->
-    <action id="MVPCreator.MVPCreateAction" class="io.xujiaji.plugin.action.MVPCreateAction" text="MVPCreator"
+    <action id="MVPCreator.MVPCreateAction" class="io.xujiaji.plugin.action.MVPCreateAction" text="MVPManager"
             description="Create MVP class">
       <add-to-group group-id="NewGroup" anchor="first"/>
     </action>
-    <action id="MVPCreator.MVPChangeAction" class="io.xujiaji.plugin.action.MVPChangeAction" text="MVPChange"
+    <action id="MVPCreator.MVPChangeAction" class="io.xujiaji.plugin.action.MVPChangeAction" text="MVPManager"
             description="Change mvp by it.">
       <add-to-group group-id="GenerateGroup" anchor="first"/>
     </action>

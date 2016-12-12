@@ -1,7 +1,12 @@
 package io.xujiaji.plugin.dialog;
 
 import com.intellij.openapi.ui.Messages;
+import io.xujiaji.plugin.listener.ChangeListener;
+import io.xujiaji.plugin.listener.IMDListener;
+import io.xujiaji.plugin.model.MethodEntity;
 import io.xujiaji.plugin.util.ClassHelper;
+import io.xujiaji.plugin.util.GenericHelper;
+import io.xujiaji.plugin.widget.InputMethodDialog;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -12,6 +17,9 @@ import java.awt.event.*;
 import java.util.Map;
 
 public class ChangeMVPDialog extends JDialog {
+    public static final int VIEW = 0;
+    public static final int PRESENTER = 1;
+    public static final int MODEL = 2;
     private JPanel contentPane;
     private JButton btnAddView;
     private JTable tableView;
@@ -26,6 +34,11 @@ public class ChangeMVPDialog extends JDialog {
     private JButton[] btnDelArr = new JButton[3];
     private JTable[] tableArr = new JTable[3];
     private Map<String, Object[][]> objects;
+    private ChangeListener listener;
+
+    public void setListener(ChangeListener listener) {
+        this.listener = listener;
+    }
 
     public ChangeMVPDialog(Map<String, Object[][]> objects) {
         this.objects = objects;
@@ -77,8 +90,13 @@ public class ChangeMVPDialog extends JDialog {
             btn.addActionListener(new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    DefaultTableModel model = (DefaultTableModel) tableArr[finalI].getModel();
-                    model.addRow(new Object[]{"void", ""});
+                    InputMethodDialog.input(new IMDListener() {
+                        @Override
+                        public void complete(MethodEntity methodEntity) {
+                            methodEntity = GenericHelper.addAMethod((DefaultTableModel) tableArr[finalI].getModel(), methodEntity);
+                            if (listener != null) listener.add(finalI, methodEntity);
+                        }
+                    });
                 }
             });
         }
@@ -92,6 +110,11 @@ public class ChangeMVPDialog extends JDialog {
                     DefaultTableModel model = (DefaultTableModel) tableArr[finalI].getModel();
                     int totalRow = 0;
                     for (int row : tableArr[finalI].getSelectedRows()) {
+                        if (listener != null) {
+                            String returnStr = (String) model.getValueAt(row, 0);
+                            String methodStr = (String) model.getValueAt(row, 1);
+                            listener.del(finalI, new MethodEntity(returnStr, methodStr));
+                        }
                         model.removeRow(row - totalRow);
                         totalRow++;
                     }
