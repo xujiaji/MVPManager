@@ -86,7 +86,7 @@ public class ChangeHelper {
         for (PsiElement p :
                 psiElement.getChildren()) {
             if (p instanceof PsiMethod) {
-                if (!psiMethod.getReturnType().equals(((PsiMethod) p).getReturnType())) return;
+                if (!psiMethod.getReturnType().equals(((PsiMethod) p).getReturnType())) continue;
                 System.out.println(getMethodText(psiMethod.getText()));
                 System.out.println(getMethodText(p.getText()));
                 if (getMethodText(psiMethod.getText()).equals(getMethodText(p.getText()))) {
