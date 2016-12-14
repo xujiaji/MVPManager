@@ -21,6 +21,11 @@
   2. File -> setting -> Plugin -> Install plugin from disk
   3. Select the jar package you downloaded.
   4. OK then reboot Intellij/Android studio.
+  
+# 搭配xmvp library更加方便 / With xmvp library more convenient.
+Address: https://github.com/xujiaji/XMVP
+
+下面看到的XContract.View、XContract.Model、XContract.Presenter就是这个类库的。
 
 # 开始编辑MVP代码 / Start edit MVP code.
 ![open_edit](display/open_edit_MVPManager.gif)
