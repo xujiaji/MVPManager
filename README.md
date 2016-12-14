@@ -25,7 +25,7 @@
 # 搭配xmvp library更加方便 / With xmvp library more convenient.
 Address: https://github.com/xujiaji/XMVP
 
-下面看到的XContract.View、XContract.Model、XContract.Presenter就是这个类库的。
+下面在编辑界面输入框中看到的XContract.View、XContract.Model、XContract.Presenter就是这个类库的。如果您不使用可以将输入框中的内容删除，添加您需要继承的父类接口，或者不继承父类接口。
 
 # 开始编辑MVP代码 / Start edit MVP code.
 ![open_edit](display/open_edit_MVPManager.gif)
