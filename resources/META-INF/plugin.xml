@@ -1,7 +1,7 @@
-<idea-plugin version="2">
+<idea-plugin>
   <id>com.xujiaji.plugin.MVPManager</id>
   <name>MVPManager</name>
-  <version>1.0</version>
+  <version>1.1</version>
   <vendor email="jiajixu@qq.com" url="https://github.com/xujiaji">No Company</vendor>
 
   <description><![CDATA[
@@ -15,15 +15,15 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>
+      修复AndroidStudio中创建类无修饰符的问题<br>
+      去掉了接口内部接口中public的修饰
     ]]>
   </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
   <idea-version since-build="145.0"/>
 
-  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+  <!-- please see http://www.jetbrainws.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
   <!-- uncomment to enable plugin in all products -->
   <depends>com.intellij.modules.lang</depends>

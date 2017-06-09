@@ -69,6 +69,10 @@ public class ClassHelper {
         PsiClass presenterInterface = factory.createInterface("Presenter");
         PsiClass modelInterface = factory.createInterface("Model");
 
+        viewInterface.getModifierList().setModifierProperty("protect", true);
+        presenterInterface.getModifierList().setModifierProperty("protect", true);
+        modelInterface.getModifierList().setModifierProperty("protect", true);
+
         importContractClass(project, classContract, editEntity.getViewParent());
         importContractClass(project, classContract, editEntity.getPresenterParent());
         importContractClass(project, classContract, editEntity.getPresenterParent());
@@ -126,6 +130,7 @@ public class ClassHelper {
             classView = getView(editEntity.getViewDir(), editEntity);
             if (classView != null) return classView;
             classView = JavaDirectoryService.getInstance().createClass(editEntity.getViewDir(), editEntity.getViewName());
+            classView.getModifierList().setModifierProperty("public", true);
         }
 
         return classView;
@@ -152,7 +157,7 @@ public class ClassHelper {
         } else {
             clazz = JavaDirectoryService.getInstance().createClass(subDir, name);
         }
-
+        clazz.getModifierList().setModifierProperty("public", true);
         return clazz;
     }
 
