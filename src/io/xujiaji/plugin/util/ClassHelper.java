@@ -130,9 +130,8 @@ public class ClassHelper {
             classView = getView(editEntity.getViewDir(), editEntity);
             if (classView != null) return classView;
             classView = JavaDirectoryService.getInstance().createClass(editEntity.getViewDir(), editEntity.getViewName());
-            classView.getModifierList().setModifierProperty("public", true);
         }
-
+        classView.getModifierList().setModifierProperty("public", true);
         return classView;
     }
 
