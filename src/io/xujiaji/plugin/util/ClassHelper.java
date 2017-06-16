@@ -1,5 +1,6 @@
 package io.xujiaji.plugin.util;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -12,6 +13,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.impl.file.PsiDirectoryFactory;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
+import io.xujiaji.plugin.Constant;
 import io.xujiaji.plugin.model.EditEntity;
 import io.xujiaji.plugin.model.MethodEntity;
 import org.jetbrains.annotations.NotNull;
@@ -59,9 +61,11 @@ public class ClassHelper {
         PsiElementFactory factory = JavaPsiFacade.getInstance(project).getElementFactory();
 
         //create package and class
-        PsiClass classContract = createClass(moduleDir, PACKAGE_CONTRACT, editEntity.getContractName() + "Contract");
+        String contractName = editEntity.getContractName() + "Contract";
+        String modelName = editEntity.getContractName() + "Model";
+        PsiClass classContract = createClass(moduleDir, PACKAGE_CONTRACT, contractName);
         PsiClass classPresenter = createClass(moduleDir, PACKAGE_PRESENTER, editEntity.getContractName() + "Presenter");
-        PsiClass classModel = createClass(moduleDir, PACKAGE_MODEL, editEntity.getContractName() + "Model");
+        PsiClass classModel = createClass(moduleDir, PACKAGE_MODEL, modelName);
         PsiClass classView = createOrGetView(moduleDir, editEntity);
 
         //create view,presenter,model interface
@@ -98,10 +102,13 @@ public class ClassHelper {
         ((PsiJavaFile) classModel.getContainingFile()).getImportList().add(importStatement);
         ((PsiJavaFile) classView.getContainingFile()).getImportList().add(importStatement);
 
-        impInterface(factory, searchScope, classPresenter, editEntity.getContractName() + "Contract.Presenter");
-        impInterface(factory, searchScope, classModel, editEntity.getContractName() + "Contract.Model");
-        impInterface(factory, searchScope, classView, editEntity.getContractName() + "Contract.View");
+        impInterface(factory, searchScope, classPresenter, editEntity.getContractName() + Constant.C_PRESENTER);
+        impInterface(factory, searchScope, classModel, editEntity.getContractName() + Constant.C_MODEL);
+        impInterface(factory, searchScope, classView, editEntity.getContractName() + Constant.C_VIEW);
 
+        //---------------------------------------
+        addExtendToPresenter(project, factory, searchScope, classPresenter, contractName, modelName);
+        //---------------------------------------
 
         addMethodToClass(project, classPresenter, editEntity.getPresenter(), true);
         addMethodToClass(project, classModel, editEntity.getModel(), true);
@@ -233,6 +240,21 @@ public class ClassHelper {
     private static void impInterface(PsiElementFactory factory, GlobalSearchScope searchScope, PsiClass psiClass, String className) {
         PsiJavaCodeReferenceElement pjcre = factory.createFQClassNameReferenceElement(className, searchScope);
         psiClass.getImplementsList().add(pjcre);
+    }
+
+    /**
+     * If it is xmvp, add inheritance
+     * @param factory
+     * @param searchScope
+     * @param psiClass
+     */
+    private static void addExtendToPresenter(Project project, PsiElementFactory factory, GlobalSearchScope searchScope, PsiClass psiClass, String contractName, String modelName) {
+        if (!PropertiesComponent.getInstance().getBoolean(Constant.IS_XMVP)) {
+            return;
+        }
+        extendsClass(factory, searchScope, psiClass, "XBasePresenter<" + contractName + ".View," + modelName + ">");
+        searchAndImportClass("XBasePresenter", psiClass, project);
+        searchAndImportClass(modelName, psiClass, project);
     }
 
     /**

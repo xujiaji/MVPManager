@@ -1,6 +1,9 @@
 package io.xujiaji.plugin.dialog;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.ui.JBColor;
+import io.xujiaji.plugin.Constant;
 import io.xujiaji.plugin.listener.EditorListener;
 import io.xujiaji.plugin.listener.IMDListener;
 import io.xujiaji.plugin.model.EditEntity;
@@ -11,12 +14,16 @@ import io.xujiaji.plugin.widget.InputMethodDialog;
 import org.apache.http.util.TextUtils;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 public class EditorMVPDialog extends JDialog {
@@ -38,6 +45,8 @@ public class EditorMVPDialog extends JDialog {
     private JTextField modelParent;
     private JComboBox viewPackageName;
     private JTextField viewImpName;
+    private JLabel labelUrl;
+    private JCheckBox xmvpCheckBox;
     private JButton[] btnAddArr = new JButton[3];
     private JButton[] btnDelArr = new JButton[3];
     private JTable[] tableArr = new JTable[3];
@@ -57,15 +66,27 @@ public class EditorMVPDialog extends JDialog {
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
-        viewParent.setText("XContract.View");
-        presenterParent.setText("XContract.Presenter");
-        modelParent.setText("XContract.Model");
+        changeXMVP(PropertiesComponent.getInstance().getBoolean(Constant.IS_XMVP));
         fillArr();
         initView();
         addListener();
     }
 
+    private void changeXMVP(boolean isXMVP) {
+        if (isXMVP) {
+            viewParent.setText(Constant.X_VIEW);
+            presenterParent.setText(Constant.X_PRESENTER);
+            modelParent.setText(Constant.X_MODEL);
+        } else {
+            viewParent.setText(Constant.NULL);
+            presenterParent.setText(Constant.NULL);
+            modelParent.setText(Constant.NULL);
+        }
+    }
+
     private void initView() {
+        labelUrl.setForeground(JBColor.BLUE);
+        xmvpCheckBox.setSelected(PropertiesComponent.getInstance().getBoolean(Constant.IS_XMVP));
         if (initEntity == null) return;
         String[] datasPackage = new String[initEntity.getPsiDirectories().length];
         for (int i = 0; i < datasPackage.length; i++) {
@@ -76,6 +97,46 @@ public class EditorMVPDialog extends JDialog {
     }
 
     private void addListener() {
+        xmvpCheckBox.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                boolean b = xmvpCheckBox.isSelected();
+                changeXMVP(b);
+                PropertiesComponent.getInstance().setValue(Constant.IS_XMVP, b);
+            }
+        });
+
+        labelUrl.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    Desktop.getDesktop().browse(new java.net.URI(Constant.XMVP_URL));
+                } catch (IOException | URISyntaxException e1) {
+                    e1.printStackTrace();
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                labelUrl.setForeground(JBColor.RED);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                labelUrl.setForeground(JBColor.RED);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                labelUrl.setForeground(JBColor.BLUE);
+            }
+        });
+
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 onCancel();
