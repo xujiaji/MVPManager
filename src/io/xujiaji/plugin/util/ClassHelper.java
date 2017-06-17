@@ -227,7 +227,12 @@ public class ClassHelper {
     public static boolean isFileExists(AnActionEvent e, String name) {
         Project project = e.getProject();
         GlobalSearchScope searchScope = GlobalSearchScope.allScope(project);
-        PsiClass[] psiClasses = PsiShortNamesCache.getInstance(project).getClassesByName(name, searchScope);
+        PsiClass[] psiClasses = new PsiClass[0];
+        try {
+            psiClasses = PsiShortNamesCache.getInstance(project).getClassesByName(name, searchScope);
+        }catch (Exception ignored) {
+            ignored.printStackTrace();
+        }
         return psiClasses.length > 0;
     }
 

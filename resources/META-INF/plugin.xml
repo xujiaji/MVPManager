@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.xujiaji.plugin.MVPManager</id>
   <name>MVPManager</name>
-  <version>1.1.1</version>
+  <version>1.5.0</version>
   <vendor email="jiajixu@qq.com" url="https://github.com/xujiaji">No Company</vendor>
 
   <description><![CDATA[
@@ -15,8 +15,9 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      修复AndroidStudio中创建类无修饰符的问题<br>
-      去掉了接口内部接口中public的修饰
+      优化界面<br>
+      自动添加Activity或Fragment的父类<br>
+      当勾选类xmvp，自动继承XBasePresenter
     ]]>
   </change-notes>
 

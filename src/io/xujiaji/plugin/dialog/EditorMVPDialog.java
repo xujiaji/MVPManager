@@ -52,6 +52,7 @@ public class EditorMVPDialog extends JDialog {
     private JLabel labelModel;
     private JLabel labelView2;
     private JTextField baseViewParent;
+    private JLabel xmvpQuestion;
     private JButton[] btnAddArr = new JButton[3];
     private JButton[] btnDelArr = new JButton[3];
     private JTable[] tableArr = new JTable[3];
@@ -71,7 +72,6 @@ public class EditorMVPDialog extends JDialog {
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
-        changeXMVP(PropertiesComponent.getInstance().getBoolean(Constant.IS_XMVP));
         fillArr();
         initView();
         addListener();
@@ -97,7 +97,12 @@ public class EditorMVPDialog extends JDialog {
 
     private void initView() {
         labelUrl.setForeground(JBColor.BLUE);
-        xmvpCheckBox.setSelected(PropertiesComponent.getInstance().getBoolean(Constant.IS_XMVP));
+        xmvpQuestion.setForeground(JBColor.BLUE);
+
+        boolean isMVP = PropertiesComponent.getInstance().getBoolean(Constant.IS_XMVP);
+        changeXMVP(isMVP);
+        xmvpCheckBox.setSelected(isMVP);
+
         viewImpName.setColumns(30);
         if (initEntity == null) return;
         String[] datasPackage = new String[initEntity.getPsiDirectories().length];
@@ -155,20 +160,21 @@ public class EditorMVPDialog extends JDialog {
             }
         });
 
-        xmvpCheckBox.addChangeListener(new ChangeListener() {
+        xmvpCheckBox.addActionListener(new ActionListener() {
             @Override
-            public void stateChanged(ChangeEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 boolean b = xmvpCheckBox.isSelected();
                 changeXMVP(b);
                 PropertiesComponent.getInstance().setValue(Constant.IS_XMVP, b);
             }
         });
 
+
         labelUrl.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 try {
-                    Desktop.getDesktop().browse(new java.net.URI(Constant.XMVP_URL));
+                    Desktop.getDesktop().browse(new java.net.URI(Constant.MVP_MANAGER_URL));
                 } catch (IOException | URISyntaxException e1) {
                     e1.printStackTrace();
                 }
@@ -192,6 +198,37 @@ public class EditorMVPDialog extends JDialog {
             @Override
             public void mouseExited(MouseEvent e) {
                 labelUrl.setForeground(JBColor.BLUE);
+            }
+        });
+
+        xmvpQuestion.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    Desktop.getDesktop().browse(new java.net.URI(Constant.XMVP_URL));
+                } catch (IOException | URISyntaxException e1) {
+                    e1.printStackTrace();
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                xmvpQuestion.setForeground(JBColor.RED);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                xmvpQuestion.setForeground(JBColor.RED);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                xmvpQuestion.setForeground(JBColor.BLUE);
             }
         });
 
