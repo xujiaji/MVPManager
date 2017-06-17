@@ -14,4 +14,6 @@ public class Constant {
     public static final String C_PRESENTER = "Contract.Presenter";
     public static final String C_MODEL = "Contract.Model";
     public static final String XMVP_URL = "https://github.com/xujiaji/MVPManager";
+    public static final String BASE_PRESENTER = "base_presenter";
+    public static final String DEFAULT_BASE_PRESENTER = "XBaseActivity";
 }

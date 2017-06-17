@@ -63,8 +63,9 @@ public class ClassHelper {
         //create package and class
         String contractName = editEntity.getContractName() + "Contract";
         String modelName = editEntity.getContractName() + "Model";
+        String presenterName = editEntity.getContractName() + "Presenter";
         PsiClass classContract = createClass(moduleDir, PACKAGE_CONTRACT, contractName);
-        PsiClass classPresenter = createClass(moduleDir, PACKAGE_PRESENTER, editEntity.getContractName() + "Presenter");
+        PsiClass classPresenter = createClass(moduleDir, PACKAGE_PRESENTER, presenterName);
         PsiClass classModel = createClass(moduleDir, PACKAGE_MODEL, modelName);
         PsiClass classView = createOrGetView(moduleDir, editEntity);
 
@@ -108,6 +109,7 @@ public class ClassHelper {
 
         //---------------------------------------
         addExtendToPresenter(project, factory, searchScope, classPresenter, contractName, modelName);
+        addExtendToView(project, factory, searchScope, classView, editEntity.getBaseViewParent(), presenterName);
         //---------------------------------------
 
         addMethodToClass(project, classPresenter, editEntity.getPresenter(), true);
@@ -118,8 +120,8 @@ public class ClassHelper {
     }
 
     private static PsiClass getView(PsiDirectory dir, EditEntity editEntity) {
-        for (PsiClass psiClass:
-             JavaDirectoryService.getInstance().getClasses(dir)) {
+        for (PsiClass psiClass :
+                JavaDirectoryService.getInstance().getClasses(dir)) {
             if (editEntity.getViewName().equals(psiClass.getName())) {
                 return psiClass;
             }
@@ -244,6 +246,7 @@ public class ClassHelper {
 
     /**
      * If it is xmvp, add inheritance
+     *
      * @param factory
      * @param searchScope
      * @param psiClass
@@ -255,6 +258,31 @@ public class ClassHelper {
         extendsClass(factory, searchScope, psiClass, "XBasePresenter<" + contractName + ".View," + modelName + ">");
         searchAndImportClass("XBasePresenter", psiClass, project);
         searchAndImportClass(modelName, psiClass, project);
+    }
+
+    private static void addExtendToView(Project project, PsiElementFactory factory, GlobalSearchScope searchScope, PsiClass psiClass, String baseViewParent, String presenterName) {
+        if (baseViewParent == null || "".equals(baseViewParent)) return;
+        extendsClass(factory, searchScope, psiClass, baseViewParent + "<" + presenterName + ">");
+        searchAndImportClass(baseViewParent, psiClass, project);
+        searchAndImportClass(presenterName, psiClass, project);
+        PsiClass baseViewParentClass = searchClassByName(baseViewParent, project);
+        if (baseViewParentClass == null) return;
+        PsiMethod[] psiMethods = baseViewParentClass.getMethods();
+        for (PsiMethod p :
+                psiMethods) {
+            PsiModifierList psiModifierList = p.getModifierList();
+            if (psiModifierList.hasModifierProperty("abstract")) {
+                String text = p.getText();
+                text = text.replaceAll("/\\*\\*[\\s\\S]+\\*/","");
+                text = text.replaceAll("abstract ", "");
+                PsiMethod psiMethod = factory.createMethodFromText("@Override " + text.substring(0, text.lastIndexOf(";")) + " {\n\n}", psiClass);
+                psiClass.add(psiMethod);
+//                factory.createMethod();
+//                psiMethod.getModifierList().addAnnotation("Override");
+//                psiClass.add(psiMethod);
+
+            }
+        }
     }
 
     /**

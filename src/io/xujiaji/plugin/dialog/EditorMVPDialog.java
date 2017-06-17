@@ -1,7 +1,6 @@
 package io.xujiaji.plugin.dialog;
 
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.JBColor;
@@ -25,7 +24,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public class EditorMVPDialog extends JDialog {
@@ -49,6 +47,11 @@ public class EditorMVPDialog extends JDialog {
     private JTextField viewImpName;
     private JLabel labelUrl;
     private JCheckBox xmvpCheckBox;
+    private JLabel labelView;
+    private JLabel labelPresenter;
+    private JLabel labelModel;
+    private JLabel labelView2;
+    private JTextField baseViewParent;
     private JButton[] btnAddArr = new JButton[3];
     private JButton[] btnDelArr = new JButton[3];
     private JTable[] tableArr = new JTable[3];
@@ -72,6 +75,12 @@ public class EditorMVPDialog extends JDialog {
         fillArr();
         initView();
         addListener();
+        initData();
+    }
+
+    private void initData() {
+        String bp = PropertiesComponent.getInstance().getValue(Constant.BASE_PRESENTER, Constant.DEFAULT_BASE_PRESENTER);
+        baseViewParent.setText(bp);
     }
 
     private void changeXMVP(boolean isXMVP) {
@@ -124,6 +133,28 @@ public class EditorMVPDialog extends JDialog {
     }
 
     private void addListener() {
+        contractName.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                updateShow();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                updateShow();
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                updateShow();
+            }
+
+            public void updateShow() {
+                String value = contractName.getText() + "Contract.";
+                labelView.setText(value + "View");
+                labelView2.setText(value + "View extends");
+                labelPresenter.setText(value + "Presenter extends");
+                labelModel.setText(value + "Model extends");
+            }
+        });
+
         xmvpCheckBox.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -241,42 +272,45 @@ public class EditorMVPDialog extends JDialog {
     }
 
     private void onOK() {
-        if (listener != null) {
-            ArrayList<String> viewData = getData(tableView);
-            ArrayList<String> presenterData = getData(tablePresenter);
-            ArrayList<String> modelData = getData(tableModel);
-            if (viewData == null || presenterData == null || modelData == null) {
-                Messages.showMessageDialog("Incomplete information, please check", "Information", Messages.getInformationIcon());
-                return;
-            }
+        if (listener == null) {
+            return;
+        }
+        ArrayList<String> viewData = getData(tableView);
+        ArrayList<String> presenterData = getData(tablePresenter);
+        ArrayList<String> modelData = getData(tableModel);
+        if (viewData == null || presenterData == null || modelData == null) {
+            Messages.showMessageDialog("Incomplete information, please check", "Information", Messages.getInformationIcon());
+            return;
+        }
 
-            String name = contractName.getText();
-            if (name == null || name.equals("")) {
-                Messages.showMessageDialog("Please input contract name!", "Information", Messages.getInformationIcon());
-                return;
-            }
+        String name = contractName.getText();
+        if (name == null || name.equals("")) {
+            Messages.showMessageDialog("Please input contract name!", "Information", Messages.getInformationIcon());
+            return;
+        }
 
-            EditEntity ee = new EditEntity(viewData, presenterData, modelData);
-            ee.setContractName(name.trim());
-            ee.setViewParent(viewParent.getText().trim());
-            ee.setPresenterParent(presenterParent.getText().trim());
-            ee.setModelParent(modelParent.getText().trim());
-            String packageName = (String) viewPackageName.getModel().getSelectedItem();
-            if (packageName != null && !packageName.equals("") && initEntity != null && initEntity.getPsiDirectories() != null) {
-                for (int i = 0; i < initEntity.getPsiDirectories().length; i++) {
-                    if (initEntity.getPsiDirectories()[i].getName().equals(packageName)) {
-                        ee.setViewDir(initEntity.getPsiDirectories()[i]);
-                        break;
-                    }
+        EditEntity ee = new EditEntity(viewData, presenterData, modelData);
+        ee.setContractName(name.trim());
+        ee.setBaseViewParent(baseViewParent.getText().trim());
+        ee.setViewParent(viewParent.getText().trim());
+        ee.setPresenterParent(presenterParent.getText().trim());
+        ee.setModelParent(modelParent.getText().trim());
+        String packageName = (String) viewPackageName.getModel().getSelectedItem();
+        if (packageName != null && !packageName.equals("") && initEntity != null && initEntity.getPsiDirectories() != null) {
+            for (int i = 0; i < initEntity.getPsiDirectories().length; i++) {
+                if (initEntity.getPsiDirectories()[i].getName().equals(packageName)) {
+                    ee.setViewDir(initEntity.getPsiDirectories()[i]);
+                    break;
                 }
             }
-            if ("".equals(viewImpName.getText().trim())) {
-                Messages.showMessageDialog("Please input implement view!", "Information", Messages.getInformationIcon());
-                return;
-            }
-            ee.setViewName(viewImpName.getText().trim());
-            listener.editOver(ee);
         }
+        if ("".equals(viewImpName.getText().trim())) {
+            Messages.showMessageDialog("Please input implement view!", "Information", Messages.getInformationIcon());
+            return;
+        }
+        ee.setViewName(viewImpName.getText().trim());
+        listener.editOver(ee);
+        PropertiesComponent.getInstance().setValue(Constant.BASE_PRESENTER, baseViewParent.getText());
     }
 
     /**

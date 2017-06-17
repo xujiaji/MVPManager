@@ -12,6 +12,7 @@ public class EditEntity {
     private String viewParent;
     private String presenterParent;
     private String modelParent;
+    private String baseViewParent;
     private List<String> view;
     private List<String> presenter;
     private List<String> model;
@@ -26,6 +27,14 @@ public class EditEntity {
         this.view = view;
         this.presenter = presenter;
         this.model = model;
+    }
+
+    public String getBaseViewParent() {
+        return baseViewParent;
+    }
+
+    public void setBaseViewParent(String baseViewParent) {
+        this.baseViewParent = baseViewParent;
     }
 
     public String getViewName() {
