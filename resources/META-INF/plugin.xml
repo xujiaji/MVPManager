@@ -15,9 +15,13 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      新增可以将所有文件放一个包中<br>
-      通过点选按钮切换，文件创建位置<br>
-      增加预览创建文件位置
+      可以将创建的所有文件放一个包中; <br />
+      通过单选按钮切换文件创建位置（单包/多包）; <br />
+      预览创建的文件所在包的位置; <br />
+      <hr />
+      You can create all the files in a package. <br />
+      Through the radio button to switch the file to create the location (single package / multi-pack). <br />
+      Preview the location of the file where the file was created. <br />
     ]]>
   </change-notes>
 
