@@ -1,6 +1,6 @@
 # MVPManager
 
-[![MVPManager release](https://img.shields.io/badge/release-.0.0-red.svg)](https://github.com/xujiaji/MVPManager/releases) [![Github release download](https://img.shields.io/badge/download-jar-orange.svg)](https://github.com/xujiaji/MVPManager/releases/download/2.0.0/MVPManager.jar) [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/xujiaji/MVPManager/blob/master/LICENSE) 
+[![MVPManager release](https://img.shields.io/badge/release-2.0.0-red.svg)](https://github.com/xujiaji/MVPManager/releases) [![Github release download](https://img.shields.io/badge/download-jar-orange.svg)](https://github.com/xujiaji/MVPManager/releases/download/2.0.0/MVPManager.jar) [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/xujiaji/MVPManager/blob/master/LICENSE) 
 
 > 现在可以直接在intellij或Android studio里面直接搜索插件“MVPManager”进行安装。 
 
@@ -8,6 +8,11 @@
 1. 可以将创建的所有文件放一个包中;
 2. 通过单选按钮切换文件创建位置（单包/多包）;
 3. 预览创建的文件所在包的位置; 
+
+>1. You can create all the files in a package. 
+>2. Through the radio button to switch the file to create the location (single package / multi-pack). 
+>3. Preview the location of the file where the file was created.
+
 ![update_2_0_0](display/update_2_0_0.png)
 
 # 1.5.0
