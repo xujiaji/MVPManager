@@ -1,6 +1,6 @@
-# MVPManager
-
+![banner](display/banner.png)
 [![MVPManager release](https://img.shields.io/badge/release-1.5.0-red.svg)](https://github.com/xujiaji/MVPManager/releases) [![Github release download](https://img.shields.io/badge/download-jar-orange.svg)](https://github.com/xujiaji/MVPManager/releases/download/1.5.0/MVPManager.jar) [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/xujiaji/MVPManager/blob/master/LICENSE) 
+
 
 > 现在可以直接在intellij或Android studio里面直接搜索插件“MVPManager”进行安装。 
 
