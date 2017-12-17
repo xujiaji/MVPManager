@@ -2,6 +2,7 @@ package io.xujiaji.plugin.dialog;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.JBColor;
 import io.xujiaji.plugin.Constant;
@@ -10,7 +11,10 @@ import io.xujiaji.plugin.listener.IMDListener;
 import io.xujiaji.plugin.model.EditEntity;
 import io.xujiaji.plugin.model.InitEntity;
 import io.xujiaji.plugin.model.MethodEntity;
+import io.xujiaji.plugin.util.ClassHelper;
 import io.xujiaji.plugin.util.GenericHelper;
+import io.xujiaji.plugin.util.MsgUtil;
+import io.xujiaji.plugin.util.UIUtil;
 import io.xujiaji.plugin.widget.InputMethodDialog;
 import org.apache.http.util.TextUtils;
 
@@ -18,6 +22,9 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -53,18 +60,24 @@ public class EditorMVPDialog extends JDialog {
     private JLabel labelView2;
     private JTextField baseViewParent;
     private JLabel xmvpQuestion;
+    private JRadioButton multiRadioButton;
+    private JRadioButton singleRadioButton;
+    private JTree packageTree;
+    private JLabel refreshTree;
     private JButton[] btnAddArr = new JButton[3];
     private JButton[] btnDelArr = new JButton[3];
     private JTable[] tableArr = new JTable[3];
     private EditorListener listener;
     private InitEntity initEntity;
+    private PsiDirectory mPsiDirectory;
 
     public void setEditorListener(EditorListener listener) {
         this.listener = listener;
     }
 
-    public EditorMVPDialog(InitEntity initEntity) {
+    public EditorMVPDialog(PsiDirectory psiDirectory, InitEntity initEntity) {
         this.initEntity = initEntity;
+        this.mPsiDirectory = psiDirectory;
         setContentPane(contentPane);
         setModal(true);
 
@@ -96,8 +109,10 @@ public class EditorMVPDialog extends JDialog {
     }
 
     private void initView() {
+        packageTree.setVisible(false);
         labelUrl.setForeground(JBColor.BLUE);
         xmvpQuestion.setForeground(JBColor.BLUE);
+        refreshTree.setForeground(JBColor.BLUE);
 
         boolean isMVP = PropertiesComponent.getInstance().getBoolean(Constant.IS_XMVP);
         changeXMVP(isMVP);
@@ -137,7 +152,65 @@ public class EditorMVPDialog extends JDialog {
         cbInput.putClientProperty("is_adjusting", adjusting);
     }
 
+    private void selectTree(Object object)
+    {
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(mPsiDirectory.getName());
+        if (object == singleRadioButton && singleRadioButton.isSelected())
+        {
+            viewPackageName.setVisible(false);
+            fillSinglePackageTree(root);
+        } else if (object == multiRadioButton && multiRadioButton.isSelected())
+        {
+            viewPackageName.setVisible(true);
+            fillMultiPackageTree(root);
+        }
+        packageTree.setVisible(true);
+        TreeModel treeModel = new DefaultTreeModel(root);
+        packageTree.setModel(treeModel);
+        UIUtil.expandTree(packageTree);
+    }
+
     private void addListener() {
+        ChangeListener radioListener = e -> selectTree(e.getSource());
+
+        multiRadioButton.addChangeListener(radioListener);
+        singleRadioButton.addChangeListener(radioListener);
+        multiRadioButton.setSelected(true);
+
+        refreshTree.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (multiRadioButton.isSelected())
+                {
+                    selectTree(multiRadioButton);
+                } else
+                {
+                    selectTree(singleRadioButton);
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                refreshTree.setForeground(JBColor.RED);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                refreshTree.setForeground(JBColor.RED);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                refreshTree.setForeground(JBColor.BLUE);
+            }
+        });
+
+
         contractName.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 updateShow();
@@ -290,6 +363,46 @@ public class EditorMVPDialog extends JDialog {
         }
     }
 
+    private void fillSinglePackageTree(DefaultMutableTreeNode root)
+    {
+        String name = contractName.getText();
+        DefaultMutableTreeNode createdFolder = new DefaultMutableTreeNode(TextUtils.isEmpty(name) ? "(Please input contract name!)" : name.toLowerCase());
+        createdFolder.add(new DefaultMutableTreeNode(TextUtils.isEmpty(viewImpName.getText()) ? "(Please input Activity/Fragment!)" : viewImpName.getText() + ".java"));
+        createdFolder.add(new DefaultMutableTreeNode(name + ClassHelper.CONTRACT  + ".java"));
+        createdFolder.add(new DefaultMutableTreeNode(name + ClassHelper.PRESENTER + ".java"));
+        createdFolder.add(new DefaultMutableTreeNode(name + ClassHelper.MODEL     + ".java"));
+        root.add(createdFolder);
+    }
+
+    private void fillMultiPackageTree(DefaultMutableTreeNode root)
+    {
+        String name = contractName.getText();
+
+        DefaultMutableTreeNode contract  = new DefaultMutableTreeNode(ClassHelper.PACKAGE_CONTRACT);
+        DefaultMutableTreeNode presenter = new DefaultMutableTreeNode(ClassHelper.PACKAGE_PRESENTER);
+        DefaultMutableTreeNode model     = new DefaultMutableTreeNode(ClassHelper.PACKAGE_MODEL);
+
+        if (viewPackageName.getSelectedItem() != null)
+        {
+            String viewPackage = viewPackageName.getSelectedItem().toString();
+            DefaultMutableTreeNode view  = new DefaultMutableTreeNode(viewPackage);
+            view     .add(new DefaultMutableTreeNode(TextUtils.isEmpty(viewImpName.getText()) ? "(Please input Activity/Fragment!)" : viewImpName.getText() + ".java"));
+            root.add(view);
+        } else
+        {
+            root     .add(new DefaultMutableTreeNode(TextUtils.isEmpty(viewImpName.getText()) ? "(Please input Activity/Fragment!)" : viewImpName.getText() + ".java"));
+        }
+
+        contract .add(new DefaultMutableTreeNode(name + ClassHelper.CONTRACT  + ".java"));
+        presenter.add(new DefaultMutableTreeNode(name + ClassHelper.PRESENTER + ".java"));
+        model    .add(new DefaultMutableTreeNode(name + ClassHelper.MODEL     + ".java"));
+
+        root.add(contract);
+        root.add(presenter);
+        root.add(model);
+
+    }
+
     /**
      * fill view array
      */
@@ -321,12 +434,14 @@ public class EditorMVPDialog extends JDialog {
         }
 
         String name = contractName.getText();
-        if (name == null || name.equals("")) {
-            Messages.showMessageDialog("Please input contract name!", "Information", Messages.getInformationIcon());
+        if (TextUtils.isEmpty(name))
+        {
+            MsgUtil.msgContractNameNull();
             return;
         }
 
         EditEntity ee = new EditEntity(viewData, presenterData, modelData);
+        ee.setSinglePackage(singleRadioButton.isSelected());
         ee.setContractName(name.trim());
         ee.setBaseViewParent(baseViewParent.getText().trim());
         ee.setViewParent(viewParent.getText().trim());
@@ -380,7 +495,7 @@ public class EditorMVPDialog extends JDialog {
     }
 
     public static void main(String[] args) {
-        EditorMVPDialog dialog = new EditorMVPDialog(null);
+        EditorMVPDialog dialog = new EditorMVPDialog(null, null);
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);

@@ -35,9 +35,10 @@ public class ClassHelper {
     public static final String PACKAGE_MODEL = "model";
     public static final String PACKAGE_PRESENTER = "presenter";
     public static final String PACKAGE_CONTRACT = "contract";
-    public static final String VIEW = "View";
+    public static final String VIEW      = "View";
     public static final String PRESENTER = "Presenter";
-    public static final String MODEL = "Model";
+    public static final String MODEL     = "Model";
+    public static final String CONTRACT  = "Contract";
 
     public static void create(AnActionEvent e, EditEntity editEntity) throws FileNotFoundException, UnsupportedEncodingException {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -64,10 +65,26 @@ public class ClassHelper {
         String contractName = editEntity.getContractName() + "Contract";
         String modelName = editEntity.getContractName() + "Model";
         String presenterName = editEntity.getContractName() + "Presenter";
-        PsiClass classContract = createClass(moduleDir, PACKAGE_CONTRACT, contractName);
-        PsiClass classPresenter = createClass(moduleDir, PACKAGE_PRESENTER, presenterName);
-        PsiClass classModel = createClass(moduleDir, PACKAGE_MODEL, modelName);
-        PsiClass classView = createOrGetView(moduleDir, editEntity);
+
+        PsiClass classContract ;
+        PsiClass classPresenter;
+        PsiClass classModel    ;
+        PsiClass classView     ;
+
+        if (editEntity.isSinglePackage())
+        {
+            String packageName = editEntity.getContractName().toLowerCase();
+            classContract  = createClass(moduleDir, packageName, contractName);
+            classPresenter = createClass(moduleDir, packageName, presenterName);
+            classModel     = createClass(moduleDir, packageName, modelName);
+            classView      = createClass(moduleDir, packageName, editEntity.getViewName());
+        } else
+        {
+            classContract  = createClass(moduleDir, PACKAGE_CONTRACT, contractName);
+            classPresenter = createClass(moduleDir, PACKAGE_PRESENTER, presenterName);
+            classModel     = createClass(moduleDir, PACKAGE_MODEL, modelName);
+            classView      = createOrGetView(moduleDir, editEntity);
+        }
 
         //create view,presenter,model interface
         PsiClass viewInterface = factory.createInterface("View");
@@ -386,7 +403,7 @@ public class ClassHelper {
     }
 
     public static PsiDirectory[] dirList(AnActionEvent e) {
-        PsiDirectory moduleDir = PsiDirectoryFactory.getInstance(e.getProject()).createDirectory(e.getData(PlatformDataKeys.VIRTUAL_FILE));
+        PsiDirectory moduleDir = getPsiDirectory(e);
         return moduleDir.getSubdirectories();
 //        for (PsiDirectory pd : subDirs) {
 ////            int start = moduleDir.getName().length();
@@ -394,6 +411,11 @@ public class ClassHelper {
 ////            String name = pd.getName().substring(start, end);
 //            System.out.println(pd.getName());
 //        }
+    }
+
+    public static PsiDirectory getPsiDirectory(AnActionEvent e)
+    {
+        return PsiDirectoryFactory.getInstance(e.getProject()).createDirectory(e.getData(PlatformDataKeys.VIRTUAL_FILE));
     }
 
     public static PsiJavaFile getJavaFile(AnActionEvent e) {

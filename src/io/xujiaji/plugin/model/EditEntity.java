@@ -19,6 +19,8 @@ public class EditEntity {
     private PsiDirectory viewDir;
     private String viewName;
 
+    private boolean isSinglePackage;
+
     public EditEntity(String contractName) {
         this.contractName = contractName;
     }
@@ -27,6 +29,14 @@ public class EditEntity {
         this.view = view;
         this.presenter = presenter;
         this.model = model;
+    }
+
+    public boolean isSinglePackage() {
+        return isSinglePackage;
+    }
+
+    public void setSinglePackage(boolean singlePackage) {
+        isSinglePackage = singlePackage;
     }
 
     public String getBaseViewParent() {

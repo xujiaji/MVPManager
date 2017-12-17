@@ -9,4 +9,10 @@ public class MsgUtil {
     public static void showInfo(String info) {
         Messages.showMessageDialog(info, "Information", Messages.getInformationIcon());
     }
+
+
+    public static void msgContractNameNull()
+    {
+        showInfo("Please input contract name!");
+    }
 }
